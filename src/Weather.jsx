@@ -212,7 +212,7 @@ export default function Weather(params) {
         }
         //geolocalisation name in long and lat
         try {
-            const url = ` http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
+            const url = ` https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
             
             const response = await fetch(url);
             const data = await response.json();
