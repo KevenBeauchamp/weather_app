@@ -352,14 +352,14 @@ export default function Weather(params) {
                 <div className="SavedCities">
                     <h4>Saved Cities</h4>
                     <Row>
-                    {favorites ?
+                    {favorites.length > 0 ?
                     favorites.map((city, index) => (
                     <>
                         
                             <Col key={index}><Button size="sm" onClick={()=>searchWeather(city)} variant="outline-success">{city}</Button></Col>                                    
                            
                     </>
-                    )):<p>No data</p>}
+                    )):<p>No Favoris</p>}
                      </Row>           
                 </div>
                 </Card.Body>
