@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Col, Container, Form, InputGroup, ListGroup, Nav, Row, Stack, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import { Badge, Button, Card, Col, Container, Form, FormCheck, InputGroup, ListGroup, Nav, Row, Spinner, Stack, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
 import './Weather.css'
 import { useEffect, useRef, useState } from "react";
 import clear_icon from "./assets/clear.png"
@@ -16,6 +16,12 @@ export default function Weather(params) {
     const [location, setLocation] = useState(null);
     const [weather_data, setWeather] = useState(false);
     const [weather_data_Two, setWeatherDayTwo] = useState(false);
+    const [unit, setUnit] = useState("metric"); // "metric" = Celsius, "imperial" = Fahrenheit
+    function toggleUnit() {
+        setUnit(prevUnit => prevUnit === "metric" ? "imperial" : "metric");
+    }
+    const unitSymbol = unit === "metric" ? "°C" : "°F";
+
     const allICons = {
         "01d": clear_icon,
         "01n": clear_icon,
@@ -58,7 +64,7 @@ export default function Weather(params) {
       }
       
         function fiveDayForecast(latitude,longitude){
-            fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=imperial`)
+            fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=${unit}`)
             .then(response => response.json())
             .then(dataFiveDay => {
                 let iconOne =  dataFiveDay.list[0].weather[0].icon;
@@ -136,7 +142,7 @@ export default function Weather(params) {
         setLocation({ latitude, longitude });
 
         // Make API call to OpenWeatherMap
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=imperial`)
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=${unit}`)
           .then(response => response.json())
           .then(data => {
             const icon = data.weather[0].icon;
@@ -160,7 +166,7 @@ export default function Weather(params) {
         ()=>{
             handleLocationClick()
             
-        },[]
+        },[unit]
     )
     const inputSearchRef = useRef();
     const handleKeyDown = (event) => {
@@ -178,7 +184,8 @@ export default function Weather(params) {
             return;
         }
         try {
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=Imperial&appid=${apiKey}`;
+            
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${apiKey}`;
             
             const response = await fetch(url);
             const data = await response.json();
@@ -206,6 +213,7 @@ export default function Weather(params) {
                 feels_like: Math.floor(data.main.feels_like), 
                 icons: allICons[icon]
             })
+            inputSearchRef.current.value = ""
         } catch (error) {
             setWeather(false);
             // console.error("Error data");
@@ -259,7 +267,6 @@ export default function Weather(params) {
         setFavorites(updated);
         localStorage.setItem("favoriteCities", JSON.stringify(updated));
       };
-      console.log(favorites)
     return(
     <Container className="weather">
         <Row>
@@ -277,8 +284,8 @@ export default function Weather(params) {
                 <p className="text-muted mb-1"> {weather_data.todayDate}</p>
                 <div className="d-flex align-items-center">
                     <img width="75px" src={weather_data.icons} alt="sunny" />
-                    <h3 class    Name="ms-3 mb-0">{weather_data.temperature}°F</h3>                   
-                    <h6 className="ms-3 mb-0">Feels :{weather_data.feels_like}°F</h6>
+                    <h3 class    Name="ms-3 mb-0">{weather_data.temperature} {unitSymbol }</h3>                   
+                    <h6 className="ms-3 mb-0">Feels :{weather_data.feels_like} {unitSymbol }</h6>
                 
                 </div>
                 <p className="fs-5 mt-2">{weather_data.temp}</p>
@@ -290,11 +297,20 @@ export default function Weather(params) {
                     <Badge bg="light" text="dark"> Sunrise: {weather_data.sunrise}</Badge>{' '}
                     <Badge bg="light" text="dark"> Sunset: {weather_data.sunset}</Badge>
                 </p>
+
+                {/* <div> */}
+                {/* <Button variant="secondary" onClick={toggleUnit}>
+                    Switch to {unit === "metric" ? "Fahrenheit" : "Celsius"}
+                </Button> */}
+
+                {/* </div> */}
                 </Card.Body>
           </Card>
             </div>
         :<>
-        <p>No Data</p>
+        <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+        </Spinner>
     </>
     }
         </Col>
@@ -310,45 +326,51 @@ export default function Weather(params) {
                         <Row>
                             <Col><span><img width="25px" src={weather_data_Two.iconsOne} alt="sunny" /></span></Col>
                             <Col><span>{weather_data_Two.dayShowOne} </span></Col>
-                            <Col><span> {weather_data_Two.dayTempOne}°F</span></Col>
-                            <Col><small className="text-muted">{weather_data_Two.dayTempMinOne}°F  {weather_data_Two.dayTempMaxOne}°F</small></Col>
+                            <Col><span> {weather_data_Two.dayTempOne}{unitSymbol }</span></Col>
+                            <Col><small className="text-muted">{weather_data_Two.dayTempMinOne}{unitSymbol } {weather_data_Two.dayTempMaxOne}{unitSymbol }</small></Col>
                         </Row>
                     </div> 
                     <div className="margTop">
                         <Row>
                             <Col><span><img width="25px" src={weather_data_Two.iconsTwo} alt="sunny" /></span></Col>
-                            <Col><span>{weather_data_Two.dayShowTwo} </span></Col>
-                            <Col><span> {weather_data_Two.dayTempTwo}°F</span></Col>
-                            <Col><small className="text-muted">{weather_data_Two.dayTempMinTwo}°F  {weather_data_Two.dayTempMaxTwo}°F</small></Col>
+                            <Col><span>{weather_data_Two.dayShowTwo}</span></Col>
+                            <Col><span> {weather_data_Two.dayTempTwo}{unitSymbol }</span></Col>
+                            <Col><small className="text-muted">{weather_data_Two.dayTempMinTwo}{unitSymbol } {weather_data_Two.dayTempMaxTwo}{unitSymbol }</small></Col>
                         </Row>
                     </div> 
                     <div className="margTop">
                         <Row>
                             <Col><span><img width="25px" src={weather_data_Two.iconsThree} alt="sunny" /></span></Col>
                             <Col><span>{weather_data_Two.dayShowThree} </span></Col>
-                            <Col><span> {weather_data_Two.dayTempThree}°F</span></Col>
-                            <Col><small className="text-muted">{weather_data_Two.dayTempMinThree}°F  {weather_data_Two.dayTempMaxThree}°F</small></Col>
+                            <Col><span>{weather_data_Two.dayTempThree}{unitSymbol }</span></Col>
+                            <Col><small className="text-muted">{weather_data_Two.dayTempMinThree}{unitSymbol } {weather_data_Two.dayTempMaxThree}{unitSymbol }</small></Col>
                         </Row>
                     </div> 
                     <div className="margTop">
                         <Row>
                             <Col><span><img width="25px" src={weather_data_Two.iconsFof} alt="sunny" /></span></Col>
                             <Col><span>{weather_data_Two.dayShowFof} </span></Col>
-                            <Col><span> {weather_data_Two.dayTempFof}°F</span></Col>
-                            <Col><small className="text-muted">{weather_data_Two.dayTempMinFof}°F  {weather_data_Two.dayTempMaxFof}°F</small></Col>
+                            <Col><span> {weather_data_Two.dayTempFof}{unitSymbol }</span></Col>
+                            <Col><small className="text-muted">{weather_data_Two.dayTempMinFof}{unitSymbol } {weather_data_Two.dayTempMaxFof}{unitSymbol }</small></Col>
                         </Row>
                     </div> 
                     <div className="margTop">
                         <Row>
                             <Col><span><img width="25px" src={weather_data_Two.iconsFive} alt="sunny" /></span></Col>
                             <Col><span>{weather_data_Two.dayShowFive} </span></Col>
-                            <Col><span> {weather_data_Two.dayTempFive}°F</span></Col>
-                            <Col><small className="text-muted">{weather_data_Two.dayTempMinFive}°F  {weather_data_Two.dayTempMaxFive}°F</small></Col>
+                            <Col><span> {weather_data_Two.dayTempFive}{unitSymbol }</span></Col>
+                            <Col><small className="text-muted">{weather_data_Two.dayTempMinFive}{unitSymbol }  {weather_data_Two.dayTempMaxFive}{unitSymbol }</small></Col>
                         </Row>
                     </div> 
                        
                    </> 
-                :<></>}
+                :
+                <>
+                    <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
+                </>
+                }
                 <div className="SavedCities">
                     <h4>Saved Cities</h4>
                     <Row>
